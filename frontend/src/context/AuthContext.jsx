@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
+const API = import.meta.env.VITE_API_URL;
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -30,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   // ----------------------------------------
   const fetchProfile = async (tok) => {
     try {
-      const res = await axios.get("http://localhost:5000/api/v1/auth/profile", {
+      const res = await axios.get(`${API}/api/v1/auth/profile`, {
         headers: {
           Authorization: `Bearer ${tok}`,
         },
@@ -50,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   // ----------------------------------------
   const login = async (email, password) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/auth/login", {
+      const res = await axios.post(`${API}/api/v1/auth/login`, {
         email,
         password,
       });
@@ -81,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (name, email, password) => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/v1/auth/signup",
+        `${API}/api/v1/auth/signup`,
         { name, email, password }
       );
 
