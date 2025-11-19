@@ -4,30 +4,39 @@ import cookieParser from 'cookie-parser';
 
 const app = express();
 
-// Use CORS_ORIGIN from environment variables for security
+// -------- CORS FIX --------
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://zippy-cupcake-548f72.netlify.app",
+  "https://*.netlify.app"
+];
+
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-    credentials: true
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some(o =>
+      o === origin || (o.includes("*") && origin.endsWith(".netlify.app"))
+    );
+
+    if (isAllowed) callback(null, true);
+    else callback(new Error("CORS Not Allowed: " + origin));
+  },
+  credentials: true,
 }));
+// --------------------------
 
-// Standard Express Middleware
-app.use(express.json({limit: "16kb"}))
-app.use(express.urlencoded({extended: true, limit: "16kb"}))
-app.use(express.static("public"))
-app.use(cookieParser())
+// Middlewares
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.static("public"));
+app.use(cookieParser());
 
-// --- Routes Import ---
-// Import your user routes (Authentication/Authorization)
+// Routes
 import authRoutes from './src/routes/auth.routes.js';
 import aiRoutes from './src/routes/ai.routes.js';
 
-
-
-// --- Routes Declaration ---
-// Prefix all user/auth routes with /api/v1/auth
-app.use("/api/v1/auth", authRoutes)
-
-// The full path to the message generator will be: /api/v1/ai/generate-message
-app.use("/api/v1/ai", aiRoutes)
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/ai", aiRoutes);
 
 export default app;
