@@ -1,44 +1,56 @@
 import { connectDB, database } from './db/db.js';
+
 const User = database.User;
 
 const setupAdmin = async () => {
   try {
     await connectDB();
 
-    // Step 1: Remove duplicates
-    const users = await User.findAll({ where: { email: 'shreya@example.com' } });
-    if (users.length > 1) {
-      const [keep, ...remove] = users;
-      for (const user of remove) {
-        await user.destroy();
-        console.log('Deleted duplicate user:', user.id);
+    // Step 1: Fetch ALL users with this email (could be duplicates)
+    const admins = await User.findAll({
+      where: { email: 'shreya@example.com' }
+    });
+
+    if (admins.length === 0) {
+      console.log("No admin found. Creating one...");
+    }
+
+    if (admins.length === 1) {
+      console.log("Admin already exists:", admins[0].email);
+    }
+
+    // Step 2: If duplicates exist, delete all except the first
+    if (admins.length > 1) {
+      console.log(`Found ${admins.length} duplicate admins. Cleaning...`);
+      const [keep, ...remove] = admins;
+
+      for (const dup of remove) {
+        await dup.destroy();
+        console.log(`Deleted duplicate admin with ID: ${dup.id}`);
       }
     }
 
-    // Step 2: Create admin safely
-    const [admin, created] = await User.findOrCreate({
-      where: { email: 'shreya@example.com' },
-      defaults: {
+    // Step 3: Create admin only if none exist
+    if (admins.length === 0) {
+      const admin = await User.create({
         name: 'Shreya Singh',
-        password: 'AdminStrongPassword123', // hashed by model hook
-        role: 'admin'
-      },
-    });
+        email: 'shreya@example.com',
+        password: 'AdminStrongPassword123',
+        role: 'admin',
+      });
 
-    if (created) {
-      console.log('Admin created successfully:', admin.email);
-    } else {
-      console.log('Admin already exists:', admin.email);
+      console.log("Admin created:", admin.email);
     }
 
   } catch (err) {
-    console.error('Error setting up admin:', err);
+    console.error("Error running admin setup:", err);
   } finally {
     process.exit(0);
   }
 };
 
 setupAdmin();
+
 
 
 
