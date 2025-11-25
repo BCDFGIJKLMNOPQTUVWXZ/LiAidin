@@ -145,7 +145,7 @@ const MessageFormPage = () => {
     try {
         // Use Axios, which automatically includes the Authorization: Bearer token
         const response = await axios.post(
-            "http://localhost:5000/api/v1/ai/generate-message",
+            `${import.meta.env.VITE_API_URL}/api/v1/ai/generate-message`,
             payload
         );
 
